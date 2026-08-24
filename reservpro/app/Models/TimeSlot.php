@@ -33,7 +33,7 @@ class TimeSlot extends Model
     public function placesRestantes(\Carbon\Carbon|string $date): int
 {
     $occupees = $this->bookings()
-        ->where('booking_date', $date)
+        ->whereDate('booking_date', $date)
         ->where('status', '!=', BookingStatus::Cancelled)
         ->count();
 
