@@ -13,6 +13,7 @@ class Establishment extends Model
     'category',
     'address',
     'description',
+    'is_published',
 ];
     public function owner()
     {
@@ -23,4 +24,11 @@ class Establishment extends Model
     {
         return $this->hasMany(TimeSlot::class);
     }
+
+    protected function casts(): array
+{
+    return [
+        'is_published' => 'boolean',
+    ];
+}
 }
