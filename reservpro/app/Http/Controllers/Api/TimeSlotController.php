@@ -6,16 +6,48 @@ use App\Http\Controllers\Controller;
 use App\Models\Establishment;
 use App\Models\TimeSlot;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class TimeSlotController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        //
-    }
+public function index(Request $request, Establishment $establishment)
+{
+    // 1. Validation de la date reçue en paramètre (?date=YYYY-MM-DD)
+    $request->validate([
+        'date' => 'required|date_format:Y-m-d|after_or_equal:today',
+    ]);
+
+    // 2. Conversion avec Carbon pour obtenir le jour de la semaine (0 = Dimanche, 6 = Samedi)
+    $dateParam = $request->query('date');
+    $carbonDate = Carbon::parse($dateParam);
+    $dayOfWeek = $carbonDate->dayOfWeek;
+
+    // 3. Récupération des créneaux de cet établissement pour ce jour de la semaine
+    $timeSlots = $establishment->timeSlots()
+        ->where('day_of_week', $dayOfWeek)
+        ->get();
+
+    // 4. Enrichissement : on ajoute places_restantes, calculé dynamiquement
+    $result = $timeSlots->map(function ($timeSlot) use ($carbonDate) {
+        return [
+            'id' => $timeSlot->id,
+            'start_time' => $timeSlot->start_time,
+            'end_time' => $timeSlot->end_time,
+            'capacity' => $timeSlot->capacity,
+            'places_restantes' => $timeSlot->placesRestantes($carbonDate),
+        ];
+    });
+
+    // 5. Réponse JSON
+    return response()->json([
+        'establishment' => $establishment->only('id', 'name', 'category'),
+        'date' => $dateParam,
+        'timeslots' => $result,
+    ]);
+}
 
     /**
      * Show the form for creating a new resource.

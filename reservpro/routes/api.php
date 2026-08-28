@@ -25,3 +25,5 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::put('/timeslots/{timeSlot}', [TimeSlotController::class, 'update']);
 Route::delete('/timeslots/{timeSlot}', [TimeSlotController::class, 'destroy']);
 });
+
+Route::get('/establishments/{establishment}/timeslots', [TimeSlotController::class, 'index']);
