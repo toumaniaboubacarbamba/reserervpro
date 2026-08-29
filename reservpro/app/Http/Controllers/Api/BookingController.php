@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
 use App\Models\TimeSlot;
 use App\Services\BookingService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -41,4 +43,28 @@ class BookingController extends Controller
 
         return response()->json($booking, 201);
     }
+
+    public function myBookings(Request $request)
+{
+    $bookings = $request->user()->bookings()
+        ->with('timeSlot.establishment')
+        ->orderBy('booking_date', 'desc')
+        ->get();
+
+    return response()->json($bookings);
+}
+
+public function cancel(Request $request, Booking $booking)
+{
+    try {
+        $booking = $this->bookingService->annuler($booking, $request->user());
+    } catch (\Exception $e) {
+        return response()->json(['message' => $e->getMessage()], 422);
+    }
+
+    return response()->json([
+        'message' => 'Réservation annulée avec succès.',
+        'data' => $booking,
+    ]);
+}
 }

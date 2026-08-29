@@ -27,4 +27,41 @@ class BookingService
             ]);
         });
     }
+
+    // Annuler une réservation
+   public function annuler(Booking $booking, User $user): Booking
+{
+
+    return DB::transaction(function () use ($booking, $user) {
+        $booking = Booking::where('id', $booking->id)->lockForUpdate()->first();
+
+        $estGerant = $user->id === $booking->timeSlot->establishment->owner_id;
+        $estClient = $user->id === $booking->user_id;
+
+        if (! $estGerant && ! $estClient) {
+            throw new \Exception('Non autorisé à annuler cette réservation.');
+        }
+
+        if ($estGerant) {
+            $booking->cancelled_by = 'gerant';
+            $booking->refund_amount = $booking->amount; // remboursement total
+        } else {
+            // Calcul du délai avant le début de la prestation
+            $debutPrestation = \Carbon\Carbon::parse($booking->booking_date->format('Y-m-d') . ' ' . $booking->timeSlot->start_time);
+            $heuresRestantes = now()->diffInHours($debutPrestation, false);
+
+            $booking->cancelled_by = 'client';
+            $booking->refund_amount = $heuresRestantes >= 24
+                ? $booking->amount
+                : (int) round($booking->amount * 0.5);
+        }
+
+        $booking->status = \App\Enums\BookingStatus::Cancelled;
+        $booking->save();
+
+        return $booking;
+    });
+
+    
+}
 }

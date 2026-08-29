@@ -22,8 +22,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/establishments/{establishment}', [EstablishmentController::class, 'destroy']);
 
     Route::post('/timeslots', [TimeSlotController::class, 'store']);
-Route::put('/timeslots/{timeSlot}', [TimeSlotController::class, 'update']);
-Route::delete('/timeslots/{timeSlot}', [TimeSlotController::class, 'destroy']);
+    Route::put('/timeslots/{timeSlot}', [TimeSlotController::class, 'update']);
+    Route::delete('/timeslots/{timeSlot}', [TimeSlotController::class, 'destroy']);
+
+    Route::get('/my-bookings', [BookingController::class, 'myBookings']);
+
+    Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
 });
 
 Route::get('/establishments/{establishment}/timeslots', [TimeSlotController::class, 'index']);
