@@ -22,3 +22,5 @@ Sanctum (API tokens) si tu veux une API mobile derrière, ou Breeze si web class
 Laravel Scheduler + Queues pour les rappels et l'expiration des réservations non payées
 Policies + Gates pour le RBAC
 Pest pour les tests des règles métier critiques (conflits, annulation, paiement)
+
+#Docker
